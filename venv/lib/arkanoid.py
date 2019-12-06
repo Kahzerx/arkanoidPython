@@ -30,7 +30,7 @@ class Bola:
         self.rect.left = x
         self.rect.top = y
         self.image.fill(White)
-        self.movimiento = [2, -2]  # movimiento cursor (x, y)
+        self.movimiento = [2, -2]  # movimiento bola (x, y)
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
@@ -40,10 +40,10 @@ class Bola:
         self.limites()
 
     def limites(self):
-        if self.rect.left < 0 or self.rect.right > ANCHO_PANTALLA:
+        if self.rect.left < 0 or self.rect.right > ANCHO_PANTALLA:  # paredes
             self.movimiento[0] *= -1
 
-        if self.rect.top < 0:
+        if self.rect.top < 0:  # techo
             self.movimiento[1] *= -1
 
 
