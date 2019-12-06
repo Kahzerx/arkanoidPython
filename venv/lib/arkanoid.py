@@ -1,5 +1,4 @@
 from time import clock
-
 import pygame
 from pygame.locals import *
 import time
@@ -9,6 +8,8 @@ clock = pygame.time.Clock()
 # constantes
 ANCHO_PANTALLA = 600
 ALTO_PANTALLA = 800
+
+pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 
 # colores
 White = (255, 255, 255)
@@ -20,35 +21,66 @@ Gold = (255, 188, 0)
 Grey = (100, 100, 100)
 Yellow = (255, 255, 0)
 
-x = ANCHO_PANTALLA / 2
-y = 50
-vX = 1
-vY = 2
+
+class Cursor:
+    def __init__(self, x, y, ancho, alto):
+        self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
+        self.rect = self.image.get_rect()  # consigo las coordenadas del cursor
+        self.rect.left = x
+        self.rect.top = y
+        self.image.fill(White)
+        self.movimiento = [0, 0]
+        self.velocidad = 8
+
+    def crea(self):
+        pantalla.blit(self.image, self.rect)
+
+    def actualiza(self):
+        self.rect = self.rect.move(self.movimiento)
+        self.limites()#para evitar que el cursor se salga de la pantalla
+
+    def limites(self):
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > ANCHO_PANTALLA:
+            self.rect.right = ANCHO_PANTALLA
 
 
 class Juego(object):
     def __init__(self):
         pygame.init()
-        self.dimensiones, self.rect = self.pantalla()
+        self.pantalla, self.rect = self.screen()
 
-    def pantalla(self):
+    def screen(self):
         pygame.display.set_caption('Arkanoid')
-        dimensiones = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
-        rect = dimensiones.get_rect()
-        dimensiones.fill(Black)
-        dimensiones.convert()
+        rect = pantalla.get_rect()
+        pantalla.convert()
 
-        return dimensiones, rect
+        return pantalla, rect
 
     def bucle(self):
         game_over = False
+        cursor = Cursor(ANCHO_PANTALLA/2, ALTO_PANTALLA - ALTO_PANTALLA/10, 80, 10)
         while not game_over:
             for event in pygame.event.get():  # detecta clicks y teclas
                 if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
                     game_over = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:#detecta flechas para movimiento (<- && ->)
+                        cursor.movimiento[0] = cursor.velocidad * -1
+                    if event.key == pygame.K_RIGHT:
+                        cursor.movimiento[0] = cursor.velocidad
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                        cursor.movimiento[0] = 0
+
+            pantalla.fill(Black)
+
+            cursor.actualiza()
+            cursor.crea()
 
             pygame.display.update()
-            clock.tick(60)
+            clock.tick(60)#para que vaya a 60 fps (PCMR)
 
         pygame.quit()
         quit()
