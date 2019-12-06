@@ -9,6 +9,7 @@ clock = pygame.time.Clock()
 ANCHO_PANTALLA = 600
 ALTO_PANTALLA = 800
 
+# dimensiones de la pantalla
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 
 # colores
@@ -29,7 +30,7 @@ class Cursor:
         self.rect.left = x
         self.rect.top = y
         self.image.fill(White)
-        self.movimiento = [0, 0]
+        self.movimiento = [0, 0]  # movimiento cursor (x, y)
         self.velocidad = 8
 
     def crea(self):
@@ -37,7 +38,7 @@ class Cursor:
 
     def actualiza(self):
         self.rect = self.rect.move(self.movimiento)
-        self.limites()#para evitar que el cursor se salga de la pantalla
+        self.limites()  # para evitar que el cursor se salga de la pantalla
 
     def limites(self):
         if self.rect.left < 0:
@@ -46,7 +47,7 @@ class Cursor:
             self.rect.right = ANCHO_PANTALLA
 
 
-class Juego(object):
+class Juego:
     def __init__(self):
         pygame.init()
         self.pantalla, self.rect = self.screen()
@@ -60,17 +61,17 @@ class Juego(object):
 
     def bucle(self):
         game_over = False
-        cursor = Cursor(ANCHO_PANTALLA/2, ALTO_PANTALLA - ALTO_PANTALLA/10, 80, 10)
+        cursor = Cursor(ANCHO_PANTALLA / 2, ALTO_PANTALLA - ALTO_PANTALLA / 10, 80, 10)  # constructor del cursor
         while not game_over:
             for event in pygame.event.get():  # detecta clicks y teclas
                 if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
                     game_over = True
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:#detecta flechas para movimiento (<- && ->)
+                    if event.key == pygame.K_LEFT:  # detecta flechas para movimiento (<- && ->)
                         cursor.movimiento[0] = cursor.velocidad * -1
                     if event.key == pygame.K_RIGHT:
                         cursor.movimiento[0] = cursor.velocidad
-                if event.type == pygame.KEYUP:
+                if event.type == pygame.KEYUP:  # deja de moverse cuando retiras el dedo del cursor
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         cursor.movimiento[0] = 0
 
@@ -80,7 +81,7 @@ class Juego(object):
             cursor.crea()
 
             pygame.display.update()
-            clock.tick(60)#para que vaya a 60 fps (PCMR)
+            clock.tick(60)  # para que vaya a 60 fps (PCMR)
 
         pygame.quit()
         quit()
