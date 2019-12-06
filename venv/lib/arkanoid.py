@@ -23,6 +23,30 @@ Grey = (100, 100, 100)
 Yellow = (255, 255, 0)
 
 
+class Bola:
+    def __init__(self, x, y, ancho, alto):
+        self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
+        self.rect = self.image.get_rect()
+        self.rect.left = x
+        self.rect.top = y
+        self.image.fill(White)
+        self.movimiento = [2, -2]  # movimiento cursor (x, y)
+
+    def crea(self):
+        pantalla.blit(self.image, self.rect)
+
+    def actualiza(self):
+        self.rect = self.rect.move(self.movimiento)
+        self.limites()
+
+    def limites(self):
+        if self.rect.left < 0 or self.rect.right > ANCHO_PANTALLA:
+            self.movimiento[0] *= -1
+
+        if self.rect.top < 0:
+            self.movimiento[1] *= -1
+
+
 class Cursor:
     def __init__(self, x, y, ancho, alto):
         self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
@@ -62,20 +86,26 @@ class Juego:
     def bucle(self):
         game_over = False
         cursor = Cursor(ANCHO_PANTALLA / 2, ALTO_PANTALLA - ALTO_PANTALLA / 10, 80, 10)  # constructor del cursor
+        bola = Bola(500, 500, 10, 10)  # constructor de la bola
         while not game_over:
             for event in pygame.event.get():  # detecta clicks y teclas
                 if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
                     game_over = True
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:  # detecta flechas para movimiento (<- && ->)
                         cursor.movimiento[0] = cursor.velocidad * -1
                     if event.key == pygame.K_RIGHT:
                         cursor.movimiento[0] = cursor.velocidad
+
                 if event.type == pygame.KEYUP:  # deja de moverse cuando retiras el dedo del cursor
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         cursor.movimiento[0] = 0
 
             pantalla.fill(Black)
+
+            bola.actualiza()
+            bola.crea()
 
             cursor.actualiza()
             cursor.crea()
