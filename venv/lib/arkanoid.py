@@ -1,4 +1,4 @@
-#TODO: vidas, menu, score, hitbox de ladrillos
+# TODO: vidas, menu, score, panel gameOver, sonidos
 
 from time import clock
 import pygame
@@ -65,22 +65,40 @@ class Bola(pygame.sprite.Sprite):
         lista = pygame.sprite.spritecollide(self, golpea, False)
         if len(lista) > 0:
             for sprite in lista:
-                posicion = self.rect[0] - sprite.rect[0]
+                posicion = self.rect.centerx - sprite.rect[0]
                 """ni idea de como conseguir donde colisiona asi que calcula la x de la posicion del cursor 
                 y la x de la posicion de la bola y las resto"""
+
                 if sprite.name == 'paddle':
-                    if posicion <= 80 / 5:
-                        self.movimiento[0] = -4.5  # divido el cursor en 5 segmentos para rebote
-                    elif posicion <= 80 / 5 * 2:
+                    if posicion <= 80 / 4:
+                        self.movimiento[0] = -4.5  # divido el cursor en 4 segmentos para rebote
+                    elif posicion <= 80 / 4 * 2:
                         self.movimiento[0] = -3
-                    elif posicion <= 80 / 5 * 3:
-                        self.movimiento[0] = 0
-                    elif posicion <= 80 / 5 * 4:
+                    elif posicion <= 80 / 4 * 3:
                         self.movimiento[0] = 3
                     else:
                         self.movimiento[0] = 4.5
+
                 elif sprite.name == 'bloque':
                     sprite.kill()
+                    # determino que ladrillo he golpeado
+                    # print(int(sprite.rect.x / 60 - (0.11 * int(sprite.rect.x / 60)) + 1))
+
+                    ladrilloGolpeado = int(sprite.rect.x / 60 - (0.11 * int(sprite.rect.x / 60)))
+
+                    # determino el punto del ladrillo en el que ha golpeado la bola
+
+                    inicioLadrillo = 2 + ladrilloGolpeado * 67
+                    finalLadrillo = inicioLadrillo + 60
+                    impacto = 60 - (finalLadrillo - self.rect.centerx)
+
+                    if impacto <= 60 / 2:
+                        self.movimiento[0] = -3  # divido los ladrillos en 2 segmentos
+                    else:
+                        self.movimiento[0] = 3
+
+                    #print(60 - (finalLadrillo - self.rect.centerx))  # error de 5 maximo
+
                     self.ladrillosRotos += 1
                     if self.ladrillosRotos == 90:
                         self.gameOver = True
@@ -156,8 +174,8 @@ class Juego:
         for fila in range(10):
             for columna in range(9):
                 block = Ladrillos()
-                block.rect.x = 1 + columna * (60 + 7)  # ancho ladrillo + espacio
-                block.rect.y = 1 + fila * (20 + 7)  # alto ladrillo + espacio
+                block.rect.x = 2 + columna * (60 + 7)  # ancho ladrillo + espacio
+                block.rect.y = 2 + fila * (20 + 7)  # alto ladrillo + espacio
                 if columna == 0 or columna % 2 == 0:
                     block.image.fill(Grey)
                 else:
