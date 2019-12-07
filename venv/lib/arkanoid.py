@@ -26,7 +26,7 @@ Yellow = (255, 255, 0)
 class Bola(pygame.sprite.Sprite):
     def __init__(self, x, y, ancho, alto):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
+        self.image = pygame.Surface((ancho, alto))
         self.rect = self.image.get_rect()
         self.rect.left = x
         self.rect.top = y
@@ -37,9 +37,9 @@ class Bola(pygame.sprite.Sprite):
     def crea(self):
         pantalla.blit(self.image, self.rect)
 
-    def actualiza(self, cursor):
+    def actualiza(self, cursor, ladrillos):
         self.rect = self.rect.move(self.movimiento)
-        self.detectaCursor(cursor)
+        self.detecta(cursor, ladrillos)
         self.limites()
 
     def limites(self):
@@ -49,11 +49,12 @@ class Bola(pygame.sprite.Sprite):
         if self.rect.top < 0:  # techo
             self.movimiento[1] *= -1
 
-    def detectaCursor(self, cursor):
-        golpe = pygame.sprite.Group(cursor)
+    def detecta(self, cursor, ladrillos):
+        golpe = pygame.sprite.Group(cursor, ladrillos)
         lista = pygame.sprite.spritecollide(self, golpe, False)
         if len(lista) > 0:
             for sprite in lista:
+                print(sprite)
                 posicion = self.rect[0] - sprite.rect[0]
                 """ni idea de como conseguir donde colisiona asi que calcula la x de la posicion del cursor 
                 y la x de la posicion de la bola y las resto"""
@@ -75,7 +76,7 @@ class Bola(pygame.sprite.Sprite):
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, x, y, ancho, alto):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
+        self.image = pygame.Surface((ancho, alto))
         self.rect = self.image.get_rect()  # consigo las coordenadas del cursor
         self.rect.left = x
         self.rect.top = y
@@ -99,6 +100,30 @@ class Cursor(pygame.sprite.Sprite):
             self.rect.right = ANCHO_PANTALLA
 
 
+class Ladrillos(pygame.sprite.Sprite):
+    def __init__(self, ancho, alto):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((ancho, alto))
+        self.image.fill(White)
+        self.rect = self.image.get_rect()
+        self.name = 'bloque'
+
+    def creaBloques(self):
+        blocks = pygame.sprite.Group
+        for fila in range(10):
+            for columna in range(9):
+                self.rect.x = 1 + columna * (60 + 7)  # ancho ladrillo + espacio
+                self.rect.y = 1 + fila * (20 + 7)  # alto ladrillo + espacio
+                if columna == 0 or columna % 2 == 0:
+                    self.image.fill(Grey)
+                else:
+                    self.image.fill(Red)
+
+                pantalla.blit(self.image, self.rect)
+                blocks.add(self)
+        print(blocks)
+
+
 class Juego:
     def __init__(self):
         pygame.init()
@@ -116,6 +141,7 @@ class Juego:
         game_over = False
         cursor = Cursor(ANCHO_PANTALLA / 2, ALTO_PANTALLA - ALTO_PANTALLA / 10, 80, 10)  # constructor del cursor
         bola = Bola(500, 500, 10, 10)  # constructor de la bola
+        ladrillos = Ladrillos(60, 20)  # constructor de ladrillos
         while not game_over:
             for event in pygame.event.get():  # detecta clicks y teclas
                 if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
@@ -126,7 +152,9 @@ class Juego:
 
             pantalla.fill(Black)
 
-            bola.actualiza(cursor)
+            ladrillos.creaBloques()
+
+            bola.actualiza(cursor, ladrillos)
             bola.crea()
 
             cursor.actualiza(self.mousex)
