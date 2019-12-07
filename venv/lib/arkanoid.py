@@ -120,8 +120,6 @@ class Ladrillos(pygame.sprite.Sprite):
                     self.image.fill(Red)
 
                 pantalla.blit(self.image, self.rect)
-                blocks.add(self)
-        print(blocks)
 
 
 class Juego:
