@@ -22,15 +22,19 @@ Gold = (255, 188, 0)
 Grey = (100, 100, 100)
 Yellow = (255, 255, 0)
 
+PADDLE = 'paddle'
 
-class Bola:
+
+class Bola(pygame.sprite.Sprite):
     def __init__(self, x, y, ancho, alto):
+        pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
         self.rect = self.image.get_rect()
         self.rect.left = x
         self.rect.top = y
         self.image.fill(White)
-        self.movimiento = [2, -2]  # movimiento bola (x, y)
+        self.movimiento = [3, -3]  # movimiento bola (x, y)
+        self.name = 'ball'
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
@@ -47,8 +51,9 @@ class Bola:
             self.movimiento[1] *= -1
 
 
-class Cursor:
+class Cursor(pygame.sprite.Sprite):
     def __init__(self, x, y, ancho, alto):
+        pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((ancho, alto), SRCALPHA, 32)
         self.rect = self.image.get_rect()  # consigo las coordenadas del cursor
         self.rect.left = x
@@ -56,12 +61,15 @@ class Cursor:
         self.image.fill(White)
         self.movimiento = [0, 0]  # movimiento cursor (x, y)
         self.velocidad = 8
+        self.name = PADDLE
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
 
-    def actualiza(self):
+    def actualiza(self, mousex):
         self.rect = self.rect.move(self.movimiento)
+        if self.rect.x >= 0 and self.rect.right <= ANCHO_PANTALLA:
+            self.rect.centerx = mousex
         self.limites()  # para evitar que el cursor se salga de la pantalla
 
     def limites(self):
@@ -75,6 +83,7 @@ class Juego:
     def __init__(self):
         pygame.init()
         self.pantalla, self.rect = self.screen()
+        self.mousex = 0
 
     def screen(self):
         pygame.display.set_caption('Arkanoid')
@@ -92,6 +101,9 @@ class Juego:
                 if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
                     game_over = True
 
+                if event.type == MOUSEMOTION:  # movimiento del cursor por raton
+                    self.mousex = event.pos[0]
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:  # detecta flechas para movimiento (<- && ->)
                         cursor.movimiento[0] = cursor.velocidad * -1
@@ -107,10 +119,11 @@ class Juego:
             bola.actualiza()
             bola.crea()
 
-            cursor.actualiza()
+            cursor.actualiza(self.mousex)
             cursor.crea()
 
             pygame.display.update()
+
             clock.tick(60)  # para que vaya a 60 fps (PCMR)
 
         pygame.quit()
