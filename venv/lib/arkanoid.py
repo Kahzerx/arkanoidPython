@@ -12,6 +12,9 @@ ALTO_PANTALLA = 800
 # dimensiones de la pantalla
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 
+#inicio
+
+
 # colores
 White = (255, 255, 255)
 Red = (169, 19, 38)
@@ -26,21 +29,26 @@ Yellow = (255, 255, 0)
 class Bola(pygame.sprite.Sprite):
     def __init__(self, x, y, ancho, alto):
         pygame.sprite.Sprite.__init__(self)
+        self.gameOver = False
         self.image = pygame.Surface((ancho, alto))
         self.rect = self.image.get_rect()
         self.rect.left = x
         self.rect.top = y
         self.image.fill(White)
-        self.movimiento = [4, -4]  # movimiento bola (x, y)
+        self.movimiento = [5, -5]  # movimiento bola (x, y)
         self.name = 'ball'
+        self.start = False
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
 
-    def actualiza(self, cursor, blocks):
-        self.rect = self.rect.move(self.movimiento)
-        self.detecta(cursor, blocks)
-        self.limites()
+    def actualiza(self, cursor, blocks, mousex):
+        if self.start:
+            self.rect = self.rect.move(self.movimiento)
+            self.detecta(cursor, blocks)
+            self.limites()
+        else:
+            self.rect.centerx = mousex
 
     def limites(self):
         if self.rect.left < 0 or self.rect.right > ANCHO_PANTALLA:  # paredes
@@ -49,9 +57,12 @@ class Bola(pygame.sprite.Sprite):
         if self.rect.top < 0:  # techo
             self.movimiento[1] *= -1
 
+        if self.rect.top > ALTO_PANTALLA: #suelo
+            self.gameOver = True
+
     def detecta(self, cursor, blocks):
-        golpe = pygame.sprite.Group(cursor, blocks)
-        lista = pygame.sprite.spritecollide(self, golpe, False)
+        golpea = pygame.sprite.Group(cursor, blocks)
+        lista = pygame.sprite.spritecollide(self, golpea, False)
         if len(lista) > 0:
             for sprite in lista:
                 posicion = self.rect[0] - sprite.rect[0]
@@ -129,7 +140,7 @@ class Juego:
         return pantalla, rect
 
     def creaBola(self):
-        bola = Bola(500, 500, 10, 10)  # constructor de la bola
+        bola = Bola(0, 705, 10, 10)  # constructor de la bola
         return bola
 
     def creaCursor(self):
@@ -161,6 +172,10 @@ class Juego:
                 if event.type == MOUSEMOTION:  # movimiento del cursor por raton
                     self.mousex = event.pos[0]
 
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.bola.start = True
+
             pantalla.fill(Black)
 
             self.todosLosSprites.update(self.mousex, self.blocks, self.cursor)
@@ -168,11 +183,14 @@ class Juego:
 
             self.cursor.actualiza(self.mousex)
 
-            self.bola.actualiza(self.cursor, self.blocks)
+            self.bola.actualiza(self.cursor, self.blocks, self.mousex)
 
             pygame.display.update()
 
             clock.tick(60)  # para que vaya a 60 fps (PCMR)
+
+            if self.bola.gameOver:
+                game_over = True
 
         pygame.quit()
         quit()
