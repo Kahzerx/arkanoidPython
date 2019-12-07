@@ -1,3 +1,5 @@
+#TODO: vidas, menu, score, hitbox de ladrillos
+
 from time import clock
 import pygame
 from pygame.locals import *
@@ -11,9 +13,6 @@ ALTO_PANTALLA = 800
 
 # dimensiones de la pantalla
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
-
-#inicio
-
 
 # colores
 White = (255, 255, 255)
@@ -38,6 +37,7 @@ class Bola(pygame.sprite.Sprite):
         self.movimiento = [5, -5]  # movimiento bola (x, y)
         self.name = 'ball'
         self.start = False
+        self.ladrillosRotos = 0
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
@@ -57,7 +57,7 @@ class Bola(pygame.sprite.Sprite):
         if self.rect.top < 0:  # techo
             self.movimiento[1] *= -1
 
-        if self.rect.top > ALTO_PANTALLA: #suelo
+        if self.rect.top > ALTO_PANTALLA:  # suelo
             self.gameOver = True
 
     def detecta(self, cursor, blocks):
@@ -81,6 +81,9 @@ class Bola(pygame.sprite.Sprite):
                         self.movimiento[0] = 4.5
                 elif sprite.name == 'bloque':
                     sprite.kill()
+                    self.ladrillosRotos += 1
+                    if self.ladrillosRotos == 90:
+                        self.gameOver = True
 
             self.movimiento[1] *= -1
 
