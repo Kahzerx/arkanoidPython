@@ -1,4 +1,4 @@
-# TODO: vidas, menu, panel gameOver, hitbox de la pelota mejorable, texturas?
+# TODO: vidas, menu, hitbox de la pelota mejorable, texturas?
 
 from time import clock
 import pygame
@@ -63,8 +63,8 @@ class Bola(pygame.sprite.Sprite):
             self.movimiento[1] *= -1
 
         if self.rect.top > ALTO_PANTALLA:  # suelo
-            # self.gameOver = True
-            self.movimiento[1] *= -1
+            self.gameOver = True
+            # self.movimiento[1] *= -1
 
     def detecta(self, cursor, blocks):
         golpea = pygame.sprite.Group(cursor, blocks)
@@ -174,6 +174,25 @@ class FPS(object):
         self.rect.bottom = ALTO_PANTALLA
 
 
+class TextoGameOver(object):
+    def __init__(self):
+        self.font = pygame.font.SysFont('Arial', 40)
+        self.render = self.font.render('GAME OVER', True, White, Black)
+        self.rect = self.render.get_rect()
+        self.rect.x = ANCHO_PANTALLA / 2 - self.rect.centerx
+        self.rect.bottom = 300
+
+
+class PuntuacionFinal(object):
+    def __init__(self):
+        self.score = 0
+        self.font = pygame.font.SysFont('Arial', 25)
+        self.render = self.font.render('Score: ' + str(self.score), True, White, Black)
+        self.rect = self.render.get_rect()
+        self.rect.x = ANCHO_PANTALLA / 2 - self.rect.centerx
+        self.rect.bottom = 400
+
+
 class Juego(object):
     def __init__(self):
         pygame.init()
@@ -188,6 +207,8 @@ class Juego(object):
         self.bola = self.creaBola()
         self.cursor = self.creaCursor()
         self.puntuacion = Puntuacion()
+        self.puntuacionFinal = PuntuacionFinal()
+        self.end = TextoGameOver()
         self.fps = FPS()
         self.todosLosSprites = pygame.sprite.Group(self.blocks, self.bola, self.cursor)
 
@@ -204,6 +225,13 @@ class Juego(object):
         self.puntuacion.rect = self.puntuacion.render.get_rect()
         self.puntuacion.rect.x = 0
         self.puntuacion.rect.bottom = ALTO_PANTALLA
+
+    def actualizaPuntuacionFinal(self):
+        self.puntuacionFinal.score = self.bola.ladrillosRotos
+        self.puntuacionFinal.render = self.puntuacionFinal.font.render('Score: ' + str(self.puntuacionFinal.score), True, White, Black)
+        self.puntuacionFinal.rect = self.puntuacionFinal.render.get_rect()
+        self.puntuacionFinal.rect.x = ANCHO_PANTALLA / 2 - self.puntuacionFinal.rect.centerx
+        self.puntuacionFinal.rect.bottom = 400
 
     def screen(self):
         pygame.display.set_caption('Arkanoid')
@@ -270,6 +298,14 @@ class Juego(object):
 
             if self.bola.gameOver:
                 game_over = True
+
+        pantalla.fill(Black)
+        pantalla.blit(self.end.render, self.end.rect)
+        self.actualizaPuntuacionFinal()
+        pantalla.blit(self.puntuacionFinal.render, self.puntuacionFinal.rect)
+        pygame.display.update()
+
+        time.sleep(2)
 
         pygame.quit()
         quit()
