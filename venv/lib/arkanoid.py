@@ -1,4 +1,4 @@
-# TODO: vidas, menu, score, panel gameOver, sonidos
+# TODO: vidas, menu, panel gameOver, sonidos, hitbox de la pelota mejorable, texturas?
 
 from time import clock
 import pygame
@@ -142,7 +142,27 @@ class Ladrillos(pygame.sprite.Sprite):
         self.name = 'bloque'
 
 
-class Juego:
+class Puntuacion(object):
+    def __init__(self):
+        self.score = 0
+        self.font = pygame.font.SysFont('Arial', 25)
+        self.render = self.font.render('Score: ' + str(self.score), True, White, Black)
+        self.rect = self.render.get_rect()
+        self.rect.x = 0
+        self.rect.bottom = ALTO_PANTALLA
+
+
+class FPS(object):
+    def __init__(self):
+        self.fps = str(int(clock.get_fps()))
+        self.font = pygame.font.SysFont('Arial', 25)
+        self.render = self.font.render('FPS: ' + self.fps, True, White, Black)
+        self.rect = self.render.get_rect()
+        self.rect.x = 500
+        self.rect.bottom = ALTO_PANTALLA
+
+
+class Juego(object):
     def __init__(self):
         pygame.init()
         self.pantalla, self.rect = self.screen()
@@ -150,8 +170,23 @@ class Juego:
         self.blocks = self.creaBloques()
         self.bola = self.creaBola()
         self.cursor = self.creaCursor()
-
+        self.puntuacion = Puntuacion()
+        self.fps = FPS()
         self.todosLosSprites = pygame.sprite.Group(self.blocks, self.bola, self.cursor)
+
+    def actualizaFPS(self):
+        self.fps.fps = str(int(clock.get_fps()))
+        self.fps.render = self.fps.font.render('FPS: ' + self.fps.fps, True, White, Black)
+        self.fps.rect = self.fps.render.get_rect()
+        self.fps.rect.x = 500
+        self.fps.rect.bottom = ALTO_PANTALLA
+
+    def actualizaPuntuacion(self):
+        self.puntuacion.score = self.bola.ladrillosRotos
+        self.puntuacion.render = self.puntuacion.font.render('Score: ' + str(self.puntuacion.score), True, White, Black)
+        self.puntuacion.rect = self.puntuacion.render.get_rect()
+        self.puntuacion.rect.x = 0
+        self.puntuacion.rect.bottom = ALTO_PANTALLA
 
     def screen(self):
         pygame.display.set_caption('Arkanoid')
@@ -206,6 +241,12 @@ class Juego:
 
             self.bola.actualiza(self.cursor, self.blocks, self.mousex)
 
+            pantalla.blit(self.puntuacion.render, self.puntuacion.rect)
+            self.actualizaPuntuacion()
+
+            pantalla.blit(self.fps.render, self.fps.rect)
+            self.actualizaFPS()
+
             pygame.display.update()
 
             clock.tick(60)  # para que vaya a 60 fps (PCMR)
@@ -220,3 +261,4 @@ class Juego:
 if __name__ == '__main__':
     game = Juego()
     game.bucle()
+
