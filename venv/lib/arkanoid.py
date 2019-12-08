@@ -1,4 +1,4 @@
-# TODO: vidas, menu, panel gameOver, sonidos, hitbox de la pelota mejorable, texturas?
+# TODO: vidas, menu, panel gameOver, hitbox de la pelota mejorable, texturas?
 
 from time import clock
 import pygame
@@ -13,6 +13,11 @@ ALTO_PANTALLA = 800
 
 # dimensiones de la pantalla
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
+
+#audio
+inicio = 'sound/inicio.wav'
+sonCursor = 'sound/cursor.wav'
+sonBloque = 'sound/block.wav'
 
 # colores
 White = (255, 255, 255)
@@ -58,7 +63,8 @@ class Bola(pygame.sprite.Sprite):
             self.movimiento[1] *= -1
 
         if self.rect.top > ALTO_PANTALLA:  # suelo
-            self.gameOver = True
+            # self.gameOver = True
+            self.movimiento[1] *= -1
 
     def detecta(self, cursor, blocks):
         golpea = pygame.sprite.Group(cursor, blocks)
@@ -70,6 +76,9 @@ class Bola(pygame.sprite.Sprite):
                 y la x de la posicion de la bola y las resto"""
 
                 if sprite.name == 'paddle':
+                    pygame.mixer.music.load(sonCursor)
+                    pygame.mixer.music.play()
+
                     if posicion <= 80 / 4:
                         self.movimiento[0] = -4.5  # divido el cursor en 4 segmentos para rebote
                     elif posicion <= 80 / 4 * 2:
@@ -80,6 +89,9 @@ class Bola(pygame.sprite.Sprite):
                         self.movimiento[0] = 4.5
 
                 elif sprite.name == 'bloque':
+                    pygame.mixer.music.load(sonBloque)
+                    pygame.mixer.music.play()
+
                     sprite.kill()
                     # determino que ladrillo he golpeado
                     # print(int(sprite.rect.x / 60 - (0.11 * int(sprite.rect.x / 60)) + 1))
@@ -165,6 +177,11 @@ class FPS(object):
 class Juego(object):
     def __init__(self):
         pygame.init()
+
+        pygame.mixer.init()
+        pygame.mixer.music.load(inicio)
+        pygame.mixer.music.play()
+
         self.pantalla, self.rect = self.screen()
         self.mousex = 0
         self.blocks = self.creaBloques()
@@ -196,7 +213,7 @@ class Juego(object):
         return pantalla, rect
 
     def creaBola(self):
-        bola = Bola(0, 705, 10, 10)  # constructor de la bola
+        bola = Bola(ANCHO_PANTALLA / 2, 705, 10, 10)  # constructor de la bola
         return bola
 
     def creaCursor(self):
