@@ -14,7 +14,7 @@ ALTO_PANTALLA = 800
 # dimensiones de la pantalla
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 
-#audio
+# audio
 inicio = 'sound/inicio.wav'
 sonCursor = 'sound/cursor.wav'
 sonBloque = 'sound/block.wav'
@@ -109,7 +109,7 @@ class Bola(pygame.sprite.Sprite):
                     else:
                         self.movimiento[0] = 3
 
-                    #print(60 - (finalLadrillo - self.rect.centerx))  # error de 5 maximo
+                    # print(60 - (finalLadrillo - self.rect.centerx))  # error de 5 maximo
 
                     self.ladrillosRotos += 1
                     if self.ladrillosRotos == 90:
@@ -164,7 +164,7 @@ class Puntuacion(object):
         self.rect.bottom = ALTO_PANTALLA
 
 
-class FPS(object):
+class FPS(object):  # si, es totalmente necesario
     def __init__(self):
         self.fps = str(int(clock.get_fps()))
         self.font = pygame.font.SysFont('Arial', 25)
@@ -193,9 +193,20 @@ class PuntuacionFinal(object):
         self.rect.bottom = 400
 
 
+class Vidas(object):
+    def __init__(self):
+        self.vidas = 3
+        self.font = pygame.font.SysFont('Arial', 25)
+        self.render = self.font.render('Vidas: ' + str(self.vidas), True, White, Black)
+        self.rect = self.render.get_rect()
+        self.rect.x = ANCHO_PANTALLA / 2 - self.rect.centerx
+        self.rect.bottom = ALTO_PANTALLA
+
+
 class Juego(object):
     def __init__(self):
         pygame.init()
+        self.cor = 3
 
         pygame.mixer.init()
         pygame.mixer.music.load(inicio)
@@ -210,7 +221,15 @@ class Juego(object):
         self.puntuacionFinal = PuntuacionFinal()
         self.end = TextoGameOver()
         self.fps = FPS()
+        self.vida = Vidas()
         self.todosLosSprites = pygame.sprite.Group(self.blocks, self.bola, self.cursor)
+
+    def actualizaVida(self):
+        self.vida.vidas = self.cor
+        self.vida.render = self.vida.font.render('Vidas: ' + str(self.vida.vidas), True, White, Black)
+        self.vida.rect = self.vida.render.get_rect()
+        self.vida.rect.x = ANCHO_PANTALLA / 2 - self.vida.rect.centerx
+        self.vida.rect.bottom = ALTO_PANTALLA
 
     def actualizaFPS(self):
         self.fps.fps = str(int(clock.get_fps()))
@@ -228,7 +247,8 @@ class Juego(object):
 
     def actualizaPuntuacionFinal(self):
         self.puntuacionFinal.score = self.bola.ladrillosRotos
-        self.puntuacionFinal.render = self.puntuacionFinal.font.render('Score: ' + str(self.puntuacionFinal.score), True, White, Black)
+        self.puntuacionFinal.render = self.puntuacionFinal.font.render('Score: ' + str(self.puntuacionFinal.score),
+                                                                       True, White, Black)
         self.puntuacionFinal.rect = self.puntuacionFinal.render.get_rect()
         self.puntuacionFinal.rect.x = ANCHO_PANTALLA / 2 - self.puntuacionFinal.rect.centerx
         self.puntuacionFinal.rect.bottom = 400
@@ -264,40 +284,53 @@ class Juego(object):
         return blocks
 
     def bucle(self):
-        game_over = False
-        while not game_over:
-            for event in pygame.event.get():  # detecta clicks y teclas
-                if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
-                    game_over = True
-
-                if event.type == MOUSEMOTION:  # movimiento del cursor por raton
-                    self.mousex = event.pos[0]
-
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.bola.start = True
-
-            pantalla.fill(Black)
-
-            self.todosLosSprites.update(self.mousex, self.blocks, self.cursor)
-            self.todosLosSprites.draw(self.pantalla)
-
-            self.cursor.actualiza(self.mousex)
-
-            self.bola.actualiza(self.cursor, self.blocks, self.mousex)
-
-            pantalla.blit(self.puntuacion.render, self.puntuacion.rect)
-            self.actualizaPuntuacion()
-
-            pantalla.blit(self.fps.render, self.fps.rect)
-            self.actualizaFPS()
-
-            pygame.display.update()
-
-            clock.tick(60)  # para que vaya a 60 fps (PCMR)
-
-            if self.bola.gameOver:
+        for x in range(0, 3):
+            self.cor = 3 - x
+            game_over = False
+            if self.bola.ladrillosRotos == 90:
                 game_over = True
+            self.bola.start = False
+            self.bola.gameOver = False
+            self.bola.rect[0] = ANCHO_PANTALLA / 2
+            self.bola.rect[1] = 705
+            self.bola.movimiento = [5, -5]
+            while not game_over:
+                for event in pygame.event.get():  # detecta clicks y teclas
+                    if event.type == pygame.QUIT:  # detecta solo cuando haces click en cerrar la ventana
+                        pygame.quit()
+                        quit()
+
+                    if event.type == MOUSEMOTION:  # movimiento del cursor por raton
+                        self.mousex = event.pos[0]
+
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            self.bola.start = True
+
+                pantalla.fill(Black)
+
+                self.todosLosSprites.update(self.mousex, self.blocks, self.cursor)
+                self.todosLosSprites.draw(self.pantalla)
+
+                self.cursor.actualiza(self.mousex)
+
+                self.bola.actualiza(self.cursor, self.blocks, self.mousex)
+
+                pantalla.blit(self.puntuacion.render, self.puntuacion.rect)  # contador de score
+                self.actualizaPuntuacion()
+
+                pantalla.blit(self.fps.render, self.fps.rect)  # contador de fps
+                self.actualizaFPS()
+
+                pantalla.blit(self.vida.render, self.vida.rect)  # contador de vidas
+                self.actualizaVida()
+
+                pygame.display.update()
+
+                clock.tick(60)  # para que vaya a 60 fps (PCMR)
+
+                if self.bola.gameOver:
+                    game_over = True
 
         pantalla.fill(Black)
         pantalla.blit(self.end.render, self.end.rect)
@@ -314,4 +347,3 @@ class Juego(object):
 if __name__ == '__main__':
     game = Juego()
     game.bucle()
-
