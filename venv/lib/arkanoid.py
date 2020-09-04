@@ -1,6 +1,5 @@
 # TODO: vidas, menu, hitbox de la pelota mejorable, texturas?
 
-from time import clock
 import pygame
 from pygame.locals import *
 import time
