@@ -42,6 +42,7 @@ class Bola(pygame.sprite.Sprite):
         self.name = 'ball'
         self.start = False
         self.ladrillosRotos = 0
+        print('test')
 
     def crea(self):
         pantalla.blit(self.image, self.rect)
